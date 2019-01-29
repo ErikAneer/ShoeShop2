@@ -9,10 +9,8 @@ public class OrderUtil {
         int numberOfItems = 0;
 
         for (Orderitem oi : orderItems) {
-            System.out.println("Antal i yttre loop" + oi.getQuantity());
             for (Shoe s : allShoes) {
                 if (s.getId() == oi.getShoe()) {
-                    System.out.println("Antal i inre loop" + oi.getQuantity());
                     System.out.println(shoeMakers.get(s.getMaker()).getName()+ ", " + s.getName() + ", "
                             + shoeColours.get(s.getColour()).getColour()+ ", á " + s.getPrice()
                             + " kr. Antal " + oi.getQuantity() + ", pris " +(oi.getQuantity()* s.getPrice()));
@@ -23,6 +21,6 @@ public class OrderUtil {
         }
         System.out.println("Antal varor: " + numberOfItems);
         System.out.println("Totalpris: " + orderSum + " kr");
-
     }
+
 }

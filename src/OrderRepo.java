@@ -1,11 +1,9 @@
 
 import jdk.internal.org.objectweb.asm.Type;
 
-import javax.swing.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class OrderRepo {
 
@@ -61,7 +59,7 @@ public class OrderRepo {
                 int id = rs.getInt("orderitems.id");
                 int order = rs.getInt("orderitems.orderid");
                 int shoe = rs.getInt("orderitems.shoe");
-                int quantity = rs.getInt("orderitems.shoe");
+                int quantity = rs.getInt("orderitems.quantity");
                 orderitems.add(new Orderitem(id, order, shoe, quantity));
             }
         }
@@ -77,5 +75,46 @@ public class OrderRepo {
             }
         }
         return orderitems;
+    }
+    public void completeOrder(int orderId) {
+        try (Connection con = pu.createConnectionFromProperty(pu.loadProperties())) {
+            CallableStatement stmt = con.prepareCall("update orders set completed = true where orders.id = ?; ");
+            stmt.setInt(1, orderId);
+            stmt.execute();
+
+
+            ResultSet rs = stmt.getResultSet();
+
+            while (rs != null && rs.next()) {
+                String errorMessage = rs.getString("error");
+                    if (errorMessage != null) {
+                        System.out.println(errorMessage);
+                    }
+                }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+            //JOptionPane.showMessageDialog(null, "Fel! " + e.getMessage());
+        }
+    }
+    public void completeOrderSetDate(int orderId) {
+        try (Connection con = pu.createConnectionFromProperty(pu.loadProperties())) {
+            CallableStatement stmt = con.prepareCall("update orders set completedDate = curdate() where orders.id = ?;");
+            stmt.setInt(1, orderId);
+            stmt.execute();
+
+            ResultSet rs = stmt.getResultSet();
+
+            while (rs != null && rs.next()) {
+                String errorMessage = rs.getString("error");
+                if (errorMessage != null) {
+                    System.out.println(errorMessage);
+                }
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+
+        }
     }
 }

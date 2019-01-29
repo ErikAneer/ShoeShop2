@@ -6,7 +6,6 @@ public class Main {
     public static void main(String[] args) {
 
         CustomerUtil cu = new CustomerUtil();
-        CustomerRepo cr = new CustomerRepo();
         ShoeRepo sr = new ShoeRepo();
         ShoeUtil su = new ShoeUtil();
         OrderRepo or = new OrderRepo();
@@ -27,40 +26,19 @@ public class Main {
         Map<Integer, ShoeType> shoeTypes = new HashMap<Integer, ShoeType>();
         sr.getAllShoeTypesFromDatabase(shoeTypes);
 
-        List<Stock> tempStock = new ArrayList<>();
+        List<Stock> tempStock;
 
         List<Shoe> allShoes = new ArrayList<>();
         List<Shoe> selectedShoes = new ArrayList<>();
         List<ShoeCategory> shoeCategories = new ArrayList<>();
 
         sr.getAllCategoriesForShoesFromDatabase(shoeCategories);
-        sr.getAllShoesFromDatabase(allShoes); // get all shoes
-
-        //selectedShoes = su.getAllShoesByCategory(allShoes, shoeCategories, shoeTypes, "Löparsko");
-
-        //System.out.println(selectedShoes.size());
-
-        //selectedShoes  = su.getAllshoesByMaker(allShoes, makers, "Altra");
-        //selectedShoes = su.getAllshoesByColour(allShoes, shoeColours, "Svart");
-        //selectedShoes = su.getAllshoesByPrice(allShoes, 800, 1000);
-        //selectedShoes = su.getAllshoesBySize(allShoes, sizes,42);
-
-        //su.displayMatchingShoesByCatergory(allShoes, selectedShoes, makers, shoeColours, sizes);
-
-        /*
-        selectedShoes.forEach(s-> System.out.println(s.getName() + " " + makers.get(s.getMaker()).getName()+ " "
-                + shoeColours.get(s.getColour()).getColour() + " " + sizes.get(s.getSize()).getEuroSize() + " " + s.getPrice()));
-        */
-
-        //allShoes.forEach(s-> System.out.println(s.getName() + " " + makers.get(s.getMaker()).getName()+ " "
-        //        + shoeColours.get(s.getColour()).getColour() + " " + sizes.get(s.getSize()).getEuroSize() + " " + s.getPrice()));
+        sr.getAllShoesFromDatabase(allShoes);
 
         Customer currentUser = null;
-        // Ask if registered customer 1.Yes 2. No
 
         Boolean loopLogin = true;
         Boolean loopLoginInner;
-        //Boolean passwordMatches;
 
         while (loopLogin) {
             loopLoginInner = true;
@@ -87,23 +65,7 @@ public class Main {
         } // end while login
 
         System.out.println();
-        System.out.println();
-        List<Orderitem> customerBasket = new ArrayList<>();
-        //System.out.println("Vad vill du söka skor efter?");  // Ask how to search for shoes(brand, type, colour, price). Ask for input. show result. Show all?
-        //System.out.println("Märke (1)\nFärg (2)\nKategori (3)\nStorlek (4)\nPris (5)\nVisa alla skor! (6)");
-        /*
-        Scanner scanner = new Scanner(System.in);
-        int input = scanner.nextInt();
-
-        switch (input) {
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-            default: su.displayAllShoes(allShoes,selectedShoes, makers, shoeColours, sizes );
-        }
-        */
+        Scanner shopScanner = new Scanner(System.in);
         Boolean continueShop = true;
         int orderId = 0;
         while (continueShop) {
@@ -111,16 +73,13 @@ public class Main {
             Shoe tempShoe;
             tempShoe = su.getTheShoeToBuy(allShoes, selectedShoes, makers, shoeColours, sizes, su.receiveShoeModelFromInput());
             tempStock = sr.getStockInAllSizesForShoeModel(tempShoe);
-
             su.displaySizesAndStockForModel(tempStock, tempShoe, allShoes, makers, sizes);
-
 
             System.out.println("Ange storlek du vill beställa: ");
             Scanner receiveOrder = new Scanner(System.in);
             double receivedSize = receiveOrder.nextDouble();
             System.out.println("Ange antal du vill beställa: ");
             int receiveQuantity = receiveOrder.nextInt();
-            System.out.println(receiveQuantity);
             Shoe shoeToOrder = null;
             int shoesAdded = 0;
 
@@ -137,7 +96,6 @@ public class Main {
                     getOrderId = or.addToChart(currentUser.getId(), orderId, shoeToOrder.getId());
                     orderId = getOrderId;
                     shoesAdded++;
-                    System.out.println(shoesAdded);
                 }
                 System.out.println("Sko tillagd i varukorgen: " + makers.get(shoeToOrder.getMaker()).getName()
                         + ", " + shoeToOrder.getName() + ", antal " + shoesAdded);
@@ -145,55 +103,24 @@ public class Main {
                 System.out.println("Antalet par du vill beställa är större än antalet i lager. Vänligen gör ett nytt val.");
             }
             System.out.println("Vill du göra ett till val? (Ja/Nej");
-            Scanner shopScanner = new Scanner(System.in);
+
             String addMoreItems = shopScanner.nextLine();
             if (!addMoreItems.equalsIgnoreCase("Ja")) {continueShop = false;}
 
         }
-        //Metod visa varukorg och saldo
-        List<Orderitem> orderitems = new ArrayList<>();
+        List<Orderitem> orderitems;
         orderitems = or.getAllorderItems(orderId);
-        System.out.println(orderitems.size());
-        ou.displayOrderTotal(allShoes, orderitems, makers, shoeColours); //MÅSTE FIXAS!!!!
+        ou.displayOrderTotal(allShoes, orderitems, makers, shoeColours);
 
-
-
-        // Loop till customer is pleased.
-
-
-
-        //Go to checkout. Review
-
-        /*
-
-
-
-
-
-        List<Customer> customers = new ArrayList<>();
-                cr.getAllCustomersAsList(customers);
-
-
-
-
-
-
-        allShoes.stream().forEach(s-> System.out.println(s.getName() + " " + makers.get(s.getMaker()).getName()+ " "
-                + shoeColours.get(s.getColour()).getColour() + " " + sizes.get(s.getSize()).getEuroSize() + " " + s.getPrice()));
-
-        //customers.stream().forEach(c -> System.out.println(c.getFirstName() + " " + c.getFamilyName()));
-
-        Integer max = allShoes.stream().map(Shoe::getSize).max(Comparator.comparing(Integer::valueOf)).get();
-        Integer min = allShoes.stream().map(Shoe::getSize).min(Comparator.comparing(Integer::valueOf)).get();
-
-        System.out.println("Största storleken är : " + max + " " + sizes.get(max).getEuroSize());
-        System.out.println("Minsta storleken är : " + min + " " + sizes.get(min).getEuroSize());
-        */
-
-        //
-
-
+        System.out.println("Slutför order? (Ja/Nej)");
+        String complete = shopScanner.nextLine();
+        if (complete.equalsIgnoreCase("Ja")) {
+            or.completeOrder(orderId);
+            or.completeOrderSetDate(orderId);
+            System.out.println("Din order är slutförd.");
+        }
+        else {
+            System.out.println("Din order är mottagen och sparad för framtida modifikation.");
+        }
     }
-
-
 }
