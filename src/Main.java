@@ -10,6 +10,7 @@ public class Main {
         ShoeRepo sr = new ShoeRepo();
         ShoeUtil su = new ShoeUtil();
         OrderRepo or = new OrderRepo();
+        OrderUtil ou = new OrderUtil();
 
         Map<Integer, ShoeColour> shoeColours = new HashMap<Integer, ShoeColour>();
         sr.getAllShoeColoursFromDatabase(shoeColours);
@@ -85,10 +86,12 @@ public class Main {
             }
         } // end while login
 
-
+        System.out.println();
+        System.out.println();
         List<Orderitem> customerBasket = new ArrayList<>();
-        System.out.println("Vad vill du söka skor efter?");  // Ask how to search for shoes(brand, type, colour, price). Ask for input. show result. Show all?
-        System.out.println("Märke (1)\nFärg (2)\nKategori (3)\nStorlek (4)\nPris (5)\nVisa alla skor! (6)");
+        //System.out.println("Vad vill du söka skor efter?");  // Ask how to search for shoes(brand, type, colour, price). Ask for input. show result. Show all?
+        //System.out.println("Märke (1)\nFärg (2)\nKategori (3)\nStorlek (4)\nPris (5)\nVisa alla skor! (6)");
+        /*
         Scanner scanner = new Scanner(System.in);
         int input = scanner.nextInt();
 
@@ -100,37 +103,58 @@ public class Main {
             case 5:
             default: su.displayAllShoes(allShoes,selectedShoes, makers, shoeColours, sizes );
         }
+        */
+        Boolean continueShop = true;
+        int orderId = 0;
+        while (continueShop) {
+            su.displayAllShoes(allShoes, selectedShoes, makers, shoeColours, sizes);
+            Shoe tempShoe;
+            tempShoe = su.getTheShoeToBuy(allShoes, selectedShoes, makers, shoeColours, sizes, su.receiveShoeModelFromInput());
+            tempStock = sr.getStockInAllSizesForShoeModel(tempShoe);
 
-        Shoe tempShoe;
-        tempShoe = su.getTheShoeToBuy(allShoes,selectedShoes, makers, shoeColours, sizes, su.receiveShoeModelFromInput());
-        tempStock = sr.getStockInAllSizesForShoeModel(tempShoe);
+            su.displaySizesAndStockForModel(tempStock, tempShoe, allShoes, makers, sizes);
 
-        su.displaySizesAndStockForModel(tempStock, tempShoe, allShoes, makers, sizes);
 
-        System.out.println("Ange storlek du vill beställa: ");
-        Scanner receiveOrder = new Scanner(System.in);
-        double receivedSize = receiveOrder.nextDouble();
-        System.out.println("Ange antal du vill beställa: ");
-        int receiveQuantity = receiveOrder.nextInt();
-        Shoe shoeToOrder = null;
+            System.out.println("Ange storlek du vill beställa: ");
+            Scanner receiveOrder = new Scanner(System.in);
+            double receivedSize = receiveOrder.nextDouble();
+            System.out.println("Ange antal du vill beställa: ");
+            int receiveQuantity = receiveOrder.nextInt();
+            System.out.println(receiveQuantity);
+            Shoe shoeToOrder = null;
+            int shoesAdded = 0;
 
-        int orderId= 0;
-        int getOrderId = 0;
-        for (Shoe s : allShoes) {
-            if (s.getName().equalsIgnoreCase(tempShoe.getName()) && s.getSize() == sizesReversed.get(receivedSize).getId()) {
-                shoeToOrder = s;
 
-                //customerBasket.add(new Orderitem()s);
-
+            int getOrderId = 0;
+            for (Shoe s : allShoes) {
+                if (s.getName().equalsIgnoreCase(tempShoe.getName()) && s.getSize() == sizesReversed.get(receivedSize).getId()) {
+                    shoeToOrder = s;
+                }
             }
+            int stockForShoeToOrder = sr.getStockForShoeModel(shoeToOrder);
+            if (stockForShoeToOrder >= receiveQuantity) {
+                for (int i = 0; i < receiveQuantity; i++) {
+                    getOrderId = or.addToChart(currentUser.getId(), orderId, shoeToOrder.getId());
+                    orderId = getOrderId;
+                    shoesAdded++;
+                    System.out.println(shoesAdded);
+                }
+                System.out.println("Sko tillagd i varukorgen: " + makers.get(shoeToOrder.getMaker()).getName()
+                        + ", " + shoeToOrder.getName() + ", antal " + shoesAdded);
+            } else {
+                System.out.println("Antalet par du vill beställa är större än antalet i lager. Vänligen gör ett nytt val.");
+            }
+            System.out.println("Vill du göra ett till val? (Ja/Nej");
+            Scanner shopScanner = new Scanner(System.in);
+            String addMoreItems = shopScanner.nextLine();
+            if (!addMoreItems.equalsIgnoreCase("Ja")) {continueShop = false;}
+
         }
-        for (int i = 0; i < receiveQuantity; i++) {
-            getOrderId = or.addToChart(currentUser.getId(), orderId, shoeToOrder.getId());
-            orderId = getOrderId;
-        }
-        System.out.println(getOrderId);
-        System.out.println("Sko tillagd i varukorgen: " + makers.get(shoeToOrder.getMaker()).getName()
-                + ", " + shoeToOrder.getName() + ", antal " + receiveQuantity);
+        //Metod visa varukorg och saldo
+        List<Orderitem> orderitems = new ArrayList<>();
+        orderitems = or.getAllorderItems(orderId);
+        System.out.println(orderitems.size());
+        ou.displayOrderTotal(allShoes, orderitems, makers, shoeColours); //MÅSTE FIXAS!!!!
 
 
 

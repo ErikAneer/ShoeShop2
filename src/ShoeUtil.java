@@ -1,3 +1,4 @@
+import javax.xml.bind.SchemaOutputResolver;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -65,33 +66,35 @@ public class ShoeUtil {
             System.out.println("Största storlek" + allShoes.stream().filter(sc -> sc.getName().equals(s.getName())).map(Shoe::getSize).max(Comparator.comparing(Integer::valueOf)).get());
                     System.out.println("Minsta storlek" + allShoes.stream().filter(sc -> sc.getName().equals(s.getName())).map(Shoe::getSize).max(Comparator.comparing(Integer::valueOf)).get());
         }
-
-        /*
-        Integer maxSize = searchHits.stream().map(Shoe::getSize).max(Comparator.comparing(Integer::valueOf)).get();
-        Integer minSize = searchHits.stream().map(Shoe::getSize).min(Comparator.comparing(Integer::valueOf)).get();
-        */
-
         shoesForDisplay.forEach(s ->System.out.println(s.getName() + " " + shoeMakers.get(s.getMaker()).getName()+ " "
                 + shoeColours.get(s.getColour()).getColour()+ " " + s.getPrice() + " kr" + "Finns i storlek " +
                 allShoes.stream().filter(sc -> sc.getName().equals(s.getName())).map(Shoe::getSize).min(Comparator.comparing(Integer::valueOf)).get() +
                          " till " +allShoes.stream().filter(sc -> sc.getName().equals(s.getName())).map(Shoe::getSize).max(Comparator.comparing(Integer::valueOf)).get()));
 
-        //System.out.println( "Finns i storlek " + sizes.get(minSize).getEuroSize() + " till " + sizes.get(maxSize).getEuroSize());
 
     }
 
     public void displayAllShoes(List<Shoe> allShoes, List<Shoe> searchHits,
                                 Map<Integer, ShoeMaker> shoeMakers, Map<Integer, ShoeColour> shoeColours, Map<Integer, ShoeSize> sizes) {
         List<Shoe> shoesForDisplay;
-
+        ShoeRepo shoeRepo = new ShoeRepo();
         shoesForDisplay = allShoes.stream()
                 .filter(distinctByKey(s -> s.getName())).collect(Collectors.toList());
+        System.out.println("Följande skor finns");
+        System.out.println("-------------------------------------------------------");
+        System.out.println("Märke\t\tModell\t\tFärg\t\tPris\t\tStorlekar\t\tMedelbetyg\t\tOmdöme");
+        shoesForDisplay.forEach(s -> {
+                    System.out.print(shoeMakers.get(s.getMaker()).getName() + ", " + s.getName() + ", "
+                            + shoeColours.get(s.getColour()).getColour() + ", " + s.getPrice() + " kr." + " Finns i storlek " +
+                            sizes.get(allShoes.stream().filter(sc -> sc.getName().equals(s.getName()))
+                                    .map(Shoe::getSize).min(Comparator.comparing(Integer::valueOf)).get()).getEuroSize() +
+                            " till " + sizes.get(allShoes.stream().filter(sc -> sc.getName().equals(s.getName()))
+                            .map(Shoe::getSize).max(Comparator.comparing(Integer::valueOf)).get()).getEuroSize()+ "\t");
+                    shoeRepo.displayVerdictForShoeModel(s);
+                }
 
-        shoesForDisplay.forEach(s ->System.out.println(s.getName() + " " + shoeMakers.get(s.getMaker()).getName()+ " "
-                + shoeColours.get(s.getColour()).getColour()+ " " + s.getPrice() + " kr" + " Finns i storlek " +
-                sizes.get(allShoes.stream().filter(sc -> sc.getName().equals(s.getName())).map(Shoe::getSize).min(Comparator.comparing(Integer::valueOf)).get()).getEuroSize() +
-                " till " + sizes.get(allShoes.stream().filter(sc -> sc.getName().equals(s.getName())).map(Shoe::getSize).max(Comparator.comparing(Integer::valueOf)).get()).getEuroSize()));
-
+        );
+        System.out.println("-------------------------------------------------------");
     }
 
     public Shoe getTheShoeToBuy (List<Shoe> allShoes, List<Shoe> searchHits,
@@ -112,7 +115,7 @@ public class ShoeUtil {
         Scanner scanner = new Scanner(System.in);
         String whatShoe = "";
         System.out.println("Vilken sko vill du beställa? (Ange modellnamn):");
-        System.out.println("-------------------------------------------------");
+        //System.out.println("-------------------------------------------------");
         return whatShoe = scanner.nextLine();
     }
 
@@ -125,7 +128,7 @@ public class ShoeUtil {
             for (Shoe s : allShoes) {
 
                 if (s.getId() == stock.getShoe()) {
-                    System.out.println("Storlek " + sizes.get(s.getSize()).getEuroSize() + " finns " + stock.getInStock() + " i lager");
+                    if (stock.getInStock() >= 1) System.out.println("Storlek " + sizes.get(s.getSize()).getEuroSize() + " finns " + stock.getInStock() + " i lager");
                 }
             }
         }

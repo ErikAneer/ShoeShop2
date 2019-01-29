@@ -15,7 +15,7 @@ public class ShoeRepo {
         PreparedStatement stmt = null;
         ResultSet rs = null;
         String sqlQuery = "Select shoes.id, shoes.maker, shoes.name, shoes.shoesize, shoes.colour, shoes.price " +
-                "from shoes;";
+                "from shoes inner join shoeMakers on shoes.maker = shoemakers.id order by shoeMakers.name";
 
         try (Connection con = pu.createConnectionFromProperty(pu.loadProperties()))
         {
@@ -271,6 +271,71 @@ public class ShoeRepo {
             }
         }
         return stockForTheModel;
+    }
+    public int getStockForShoeModel(Shoe shoeToCheck) {
+
+        PreparedStatement stmt = null;
+        int inStock = 0;
+        ResultSet rs = null;
+        String sqlQuery = "Select stock.id, stock.shoe, stock.inStock from stock where stock.shoe = ?";
+
+        try (Connection con = pu.createConnectionFromProperty(pu.loadProperties()))
+        {
+            stmt = con.prepareStatement(sqlQuery);
+            stmt.setInt(1, shoeToCheck.getId());
+
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                inStock = rs.getInt("stock.inStock");
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            try {
+                stmt.close();
+                rs.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return inStock;
+    }
+
+    public void displayVerdictForShoeModel(Shoe shoeToCheck) {
+
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+        String sqlQuery = "select Medelbetyg, Omdöme from shoeAverageListWithText where Modell = ?";
+
+        try (Connection con = pu.createConnectionFromProperty(pu.loadProperties()))
+        {
+            stmt = con.prepareStatement(sqlQuery);
+            stmt.setString(1, shoeToCheck.getName());
+
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                double avgRate = rs.getDouble("Medelbetyg");
+                String avgVerdict = rs.getString("Omdöme");
+                if (avgRate > 0) {System.out.println(", " + avgRate + ", " + avgVerdict);}
+                else {System.out.println(", Inte betygsatt ännu, " + avgVerdict);}
+
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        finally {
+            try {
+                stmt.close();
+                rs.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
